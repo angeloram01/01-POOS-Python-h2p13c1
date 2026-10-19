@@ -1,5 +1,5 @@
 from empleado import Empleado
-from conexion_bd import BaseDatos
+from basedatos import BaseDatos
 
 db = BaseDatos()
 
