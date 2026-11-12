@@ -28,6 +28,7 @@ def menu():
     print("3.- Actualizar empleado")
     print("4.- Eliminar empleado")
     print("5.- Mostrar todos los empleados")
+    print("6.- Mostrar el clima")
     print("0.- Salir")
     op = leer_numero("Ingrese una opción: ")
     print("=" * 30)
