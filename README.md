@@ -4,11 +4,13 @@
 
 EcoTech Solutions es un sistema desarrollado en Python que permite administrar información de empleados mediante una base de datos SQLite.
 
-El proyecto incorpora autenticación de usuarios, validación de datos, manejo de errores y conexión a servicios externos mediante APIs para consultar información meteorológica y tipos de cambio de monedas internacionales.
+El proyecto incorpora autenticación de usuarios, programación orientada a objetos, validación de datos, manejo de errores y conexión segura a servicios externos mediante APIs para consultar información meteorológica y tipos de cambio de monedas internacionales.
 
-Además, permite convertir los sueldos de los empleados desde pesos chilenos (CLP) a dólares estadounidenses (USD) y euros (EUR).
+Además, permite convertir sueldos desde pesos chilenos (CLP) a dólares estadounidenses (USD) y euros (EUR).
 
-Este sistema fue desarrollado como parte de la Evaluación Sumativa 3 (ES3) de la asignatura Programación Orientada a Objeto Seguro de INACAP.
+Este sistema fue desarrollado como parte de la **Evaluación Sumativa 3 (ES3)** de la asignatura Programación Orientada a Objeto Seguro de INACAP.
+
+---
 
 ## Funcionalidades
 
@@ -20,86 +22,111 @@ Este sistema fue desarrollado como parte de la Evaluación Sumativa 3 (ES3) de l
 - Visualización de asteriscos al ingresar la contraseña.
 - Validación de credenciales.
 - Límite de tres intentos de inicio de sesión.
-- Comparación segura de credenciales mediante `hmac.compare_digest`.
-- Acceso a las funcionalidades únicamente después de iniciar sesión correctamente.
+- Comparación segura mediante `hmac.compare_digest`.
+- Acceso al sistema únicamente después de iniciar sesión correctamente.
 
 ### 2. Gestión de empleados
 
-- Registrar empleados.
+El sistema permite:
+
+- Registrar nuevos empleados.
 - Buscar empleados mediante RUT.
 - Actualizar información de empleados.
-- Eliminar empleados.
-- Mostrar todos los empleados registrados.
-- Almacenar la información mediante SQLite.
+- Eliminar empleados registrados.
+- Mostrar todos los empleados.
+- Almacenar y consultar información mediante SQLite.
 
 Se utilizan consultas SQL parametrizadas para reducir el riesgo de inyección SQL.
 
-### 3. Consulta del clima
+### 3. Validación del RUT chileno
 
-- Conexión a la API Open-Meteo.
-- Consulta de información meteorológica de Chillán, Chile.
-- Obtención de temperatura, humedad y estado del tiempo.
-- Procesamiento de respuestas JSON.
-- Uso de conexiones HTTPS.
-- Manejo de errores de conexión y procesamiento.
-- Control de respuestas HTTP incorrectas.
+Se implementó un módulo de validación de RUT que permite:
 
-### 4. Consulta de tipos de cambio
+- Aceptar RUT con y sin puntos.
+- Validar el dígito verificador mediante el algoritmo módulo 11.
+- Rechazar RUT inválidos.
+- Normalizar el formato del RUT.
+- Evitar el registro de identificadores incorrectos.
 
-- Conexión a ExchangeRate-API.
-- Consulta de tipos de cambio internacionales.
-- Obtención de valores del dólar estadounidense (USD), euro (EUR) y peso argentino (ARS).
-- Procesamiento de respuestas JSON.
-- Validación de los datos recibidos.
-- Manejo de errores de conexión.
+La validación se integra con la clase `Empleado`.
 
-Los tipos de cambio se obtienen desde el servicio externo y pueden variar según su actualización.
+### 4. Consulta del clima
 
-### 5. Conversión de sueldos
+El sistema utiliza la API Open-Meteo para consultar información meteorológica de Chillán, Chile.
 
-El sistema permite realizar conversiones monetarias mediante dos funcionalidades:
+La información incluye:
+
+- Temperatura actual en grados Celsius.
+- Humedad relativa.
+- Estado del tiempo.
+- Descripciones meteorológicas en español.
+
+Se implementó procesamiento JSON, manejo de errores y conexión HTTPS.
+
+### 5. Consulta de tipos de cambio
+
+Se utiliza ExchangeRate-API para obtener tipos de cambio internacionales.
+
+El sistema consulta:
+
+- Dólar estadounidense (USD).
+- Euro (EUR).
+- Peso argentino (ARS).
+
+Los valores se obtienen desde una API externa y pueden variar según su actualización.
+
+### 6. Conversión de sueldos
+
+El sistema incorpora dos modalidades de conversión.
 
 **Conversión manual:**
+
 - Ingresar un sueldo en pesos chilenos.
 - Seleccionar dólares o euros.
-- Consultar el tipo de cambio mediante una API.
-- Mostrar el sueldo convertido.
+- Consultar el tipo de cambio.
+- Calcular y mostrar el monto convertido.
 
 **Conversión de empleados registrados:**
+
 - Buscar un empleado mediante su RUT.
-- Obtener automáticamente su sueldo desde SQLite.
+- Obtener su sueldo desde SQLite.
 - Seleccionar la moneda de destino.
-- Convertir el sueldo utilizando el tipo de cambio consultado.
+- Consultar el tipo de cambio.
+- Mostrar el sueldo original y convertido.
 
-### 6. Validación de datos
+### 7. Validación de datos
 
-- Control de opciones inválidas del menú.
-- Validación de entradas numéricas.
-- Validación de edades mínimas de 18 años.
-- Validación de sueldos no negativos y valores numéricos finitos.
-- Validación de cargos permitidos.
-- Validación de RUT chileno mediante cálculo del dígito verificador.
-- Aceptación de RUT con y sin puntos.
-- Normalización de RUT para mantener un formato consistente.
-- Control de campos obligatorios.
+Se implementaron validaciones para:
 
-### 7. Manejo de errores
+- Opciones incorrectas del menú.
+- Entradas numéricas inválidas.
+- Edades inferiores a 18 años.
+- Sueldos negativos.
+- Valores numéricos no finitos en las conversiones.
+- Campos obligatorios vacíos.
+- RUT chilenos incorrectos.
+- Registros duplicados en la base de datos.
 
-Se implementaron estructuras `try/except` para controlar:
+### 8. Manejo de errores
 
-- Errores de conexión a internet.
+Se utilizan estructuras `try/except` para controlar:
+
+- Problemas de conexión a internet.
 - Fallos de servicios externos.
 - Respuestas HTTP incorrectas.
-- Datos JSON inválidos o incompletos.
+- Datos JSON inválidos.
+- Errores de autenticación.
+- Errores de operaciones SQLite.
 - Entradas incorrectas del usuario.
-- Errores de operaciones con SQLite.
-- Problemas de autenticación.
 
-Los errores controlados se muestran mediante mensajes comprensibles para evitar interrupciones innecesarias y reducir la exposición de información interna.
+Los errores controlados se muestran mediante mensajes comprensibles para evitar interrupciones innecesarias.
+
+---
 
 ## Tecnologías utilizadas
 
 - Python 3.
+- Programación Orientada a Objetos (POO).
 - SQLite.
 - JSON.
 - `urllib.request` y `urllib.error`.
@@ -111,19 +138,23 @@ Los errores controlados se muestran mediante mensajes comprensibles para evitar 
 - GitHub Codespaces.
 - Bandit para análisis estático de seguridad.
 
+---
+
 ## Acceso al sistema
 
-Para ingresar al sistema EcoTech Solutions, se dispone de las siguientes credenciales de demostración:
+Para ingresar al sistema EcoTech Solutions se dispone de las siguientes credenciales de demostración:
 
 **Usuario:** `admin`
 
 **Contraseña:** `admin1234567`
 
-La cuenta de demostración se genera automáticamente cuando no existe el archivo de usuarios.
+La cuenta de demostración se genera automáticamente cuando no existe el archivo `usuarios.json`.
 
-Las contraseñas no se almacenan directamente en texto plano dentro del archivo JSON, sino mediante un hash derivado con PBKDF2-HMAC-SHA256 y salt aleatorio.
+Las contraseñas no se almacenan directamente en texto plano dentro del archivo JSON. Se utiliza PBKDF2-HMAC-SHA256 con salt aleatorio.
 
-**Nota de seguridad:** Estas credenciales son exclusivamente académicas. La contraseña predeterminada está definida en el código fuente, por lo que debe reemplazarse antes de utilizar el sistema en un entorno real.
+**Nota de seguridad:** Estas credenciales son exclusivamente académicas. La contraseña predeterminada está definida en el código fuente y debe reemplazarse antes de utilizar el sistema en un entorno real.
+
+---
 
 ## Estructura del proyecto
 
@@ -132,19 +163,27 @@ EcoTech-Solutions/
 ├── main.py
 ├── login.py
 ├── crear_usuario.py
+├── empleado.py
+├── basedatos.py
+├── validar_rut.py
 ├── clima.py
 ├── monedas.py
-├── validar_rut.py
-├── basedatos.py
-├── empleado.py
+├── api_segura.py
 ├── departamento.py
 ├── paciente.py
-├── ecotech.db
 ├── README.md
 └── .gitignore
 ```
 
-El archivo `usuarios.json` almacena localmente los datos de autenticación y debe mantenerse excluido del repositorio mediante `.gitignore`.
+**Archivos generados localmente:**
+
+- `ecotech.db`: base de datos SQLite de empleados.
+- `usuarios.json`: datos de autenticación.
+- `usuarios_respaldo.json`: archivo de respaldo de usuarios, cuando corresponda.
+
+Estos archivos se mantienen excluidos del repositorio mediante `.gitignore`.
+
+---
 
 ## Instalación y ejecución
 
@@ -152,10 +191,18 @@ El archivo `usuarios.json` almacena localmente los datos de autenticación y deb
 
 Clonar el repositorio desde GitHub o abrirlo mediante GitHub Codespaces.
 
-### 2. Instalar la dependencia
+### 2. Instalar las dependencias
+
+Ejecutar en la terminal:
 
 ```bash
 python -m pip install pwinput
+```
+
+Para ejecutar el análisis estático de seguridad, instalar Bandit:
+
+```bash
+python -m pip install bandit
 ```
 
 ### 3. Configurar las credenciales
@@ -174,6 +221,8 @@ Ingresar el usuario y la contraseña correspondientes.
 
 El sistema requiere conexión a internet para consultar las APIs externas.
 
+---
+
 ## Menú principal
 
 ```text
@@ -191,100 +240,180 @@ El sistema requiere conexión a internet para consultar las APIs externas.
 0.- Salir
 ```
 
+---
+
 ## Seguridad del sistema
 
-Se incorporaron diferentes mecanismos de seguridad para proteger el acceso y procesamiento de información.
+Se implementaron diferentes mecanismos de seguridad para proteger el acceso, procesamiento y almacenamiento de información.
 
-### Protección de contraseñas
+### 1. Protección de contraseñas
 
-Se utiliza PBKDF2-HMAC-SHA256 con 600.000 iteraciones y salt aleatorio de 16 bytes.
+Se utiliza PBKDF2-HMAC-SHA256 con:
 
-Esto permite almacenar verificadores de contraseñas sin guardar directamente la contraseña original en el archivo de usuarios.
+- 600.000 iteraciones.
+- Salt aleatorio de 16 bytes.
+- Comparación mediante `hmac.compare_digest`.
+- Límite de tres intentos de autenticación.
 
-### Validación de información
+Los verificadores de contraseñas se almacenan en `usuarios.json`, excluido del repositorio.
 
-Se incorporaron validaciones en la clase `Empleado` para controlar edades, cargos, sueldos y RUT.
+### 2. Validación de información
 
-La validación del RUT utiliza el algoritmo de módulo 11 para comprobar su dígito verificador.
+La clase `Empleado` incorpora propiedades y métodos de validación para controlar los datos ingresados.
 
-### Protección de la base de datos
+Se verifica:
 
-Se utilizan consultas SQL parametrizadas para separar las instrucciones SQL de los datos ingresados por los usuarios.
+- RUT válido.
+- Nombre obligatorio.
+- Edad mínima.
+- Sueldo no negativo.
 
-También se incorporaron controles de errores y tiempos de espera para las conexiones SQLite.
+El RUT se comprueba mediante el algoritmo módulo 11.
 
-### Seguridad de servicios externos
+### 3. Protección de la base de datos
 
-Las consultas se realizan mediante HTTPS y utilizan tiempos de espera para evitar que el programa permanezca esperando indefinidamente.
+Se utiliza SQLite con consultas SQL parametrizadas.
 
-Se controlan errores HTTP, fallos de conexión y problemas de procesamiento de respuestas.
+Esto permite separar las instrucciones SQL de los valores ingresados por los usuarios, reduciendo el riesgo de inyección SQL.
 
-### Análisis estático
+También se implementa manejo de excepciones para las operaciones de base de datos.
 
-Se utilizó Bandit como herramienta de apoyo para analizar posibles problemas de seguridad.
+### 4. Seguridad de servicios externos
 
-Durante una revisión anterior se identificó la advertencia B310 relacionada con el uso de `urlopen()`.
+Las conexiones a APIs se centralizan mediante el módulo `api_segura.py`.
 
-Esta advertencia requiere revisar la validación de las URL y el tratamiento de redirecciones. No se considera automáticamente resuelta por utilizar HTTPS.
+Este módulo incorpora:
+
+- Uso obligatorio de HTTPS.
+- Restricción de dominios permitidos.
+- Validación de las URL utilizadas.
+- Rechazo de redirecciones automáticas.
+- Tiempo máximo de espera de 10 segundos.
+- Comprobación de respuestas HTTP.
+- Procesamiento de respuestas JSON.
+
+Los dominios autorizados son:
+
+- `api.open-meteo.com`
+- `open.er-api.com`
+
+Estas medidas reducen riesgos asociados con conexiones a destinos no autorizados.
+
+### 5. Análisis estático con Bandit
+
+Se utilizó Bandit para detectar posibles problemas de seguridad en el código Python.
+
+Durante una revisión inicial se identificaron cuatro advertencias B310 relacionadas con el uso de `urlopen()`.
+
+Para solucionarlas se implementó el módulo `api_segura.py`, que centraliza las consultas HTTPS y restringe los destinos permitidos.
+
+Después de aplicar las correcciones se ejecutó nuevamente Bandit.
+
+**Comando utilizado:**
+
+```bash
+python -m bandit -r . -x ./.venv,./venv,./__pycache__
+```
+
+**Resultados finales:**
+
+| Indicador | Resultado |
+|---|---|
+| Líneas de código analizadas | 673 |
+| Advertencias de gravedad baja | 0 |
+| Advertencias de gravedad media | 0 |
+| Advertencias de gravedad alta | 0 |
+| Archivos omitidos | 0 |
+
+**Resultado: No issues identified.**
+
+Bandit no detectó problemas mediante sus reglas de análisis estático. Este resultado no garantiza la ausencia absoluta de vulnerabilidades.
+
+---
 
 ## Uso de inteligencia artificial
 
-Durante el desarrollo se utilizó ChatGPT como herramienta de apoyo para analizar, modificar y mejorar el código Python.
+Durante el desarrollo del proyecto se utilizó ChatGPT como herramienta de apoyo para analizar, modificar, mejorar y revisar el código Python.
 
-Las principales actividades realizadas con apoyo de IA fueron:
+### Actividades realizadas con apoyo de IA
 
 1. Integración de la API de tipos de cambio.
 2. Implementación de conversiones monetarias.
-3. Integración de sueldos almacenados en SQLite con la conversión de monedas.
-4. Incorporación del estado del tiempo a la consulta meteorológica.
+3. Integración de sueldos almacenados en SQLite con las conversiones.
+4. Incorporación del estado del tiempo en la consulta meteorológica.
 5. Mejoras en el manejo de errores HTTP y excepciones.
 6. Revisión de la autenticación y protección de contraseñas.
 7. Implementación de validación del RUT chileno.
 8. Incorporación de validaciones adicionales para los empleados.
 9. Revisión del manejo de errores de SQLite.
+10. Implementación del módulo `api_segura.py`.
+11. Corrección de advertencias detectadas mediante Bandit.
+12. Actualización de la documentación del proyecto.
 
 ### Análisis y ajustes del código
 
-El código propuesto mediante IA fue revisado e integrado progresivamente al proyecto existente.
+El código propuesto mediante inteligencia artificial fue revisado e integrado progresivamente al proyecto existente.
 
-Se realizaron pruebas desde la terminal de GitHub Codespaces para comprobar el funcionamiento de las funcionalidades.
+Se realizaron pruebas mediante la terminal de GitHub Codespaces para comprobar el funcionamiento de las funcionalidades.
 
 Entre las pruebas realizadas se encuentran:
 
 - Inicio de sesión correcto.
+- Registro y búsqueda de empleados.
+- Actualización y eliminación de empleados.
+- Validación de RUT correctos e incorrectos.
+- Rechazo de edades inferiores a 18 años.
 - Consulta de tipos de cambio.
 - Conversión manual de sueldos.
 - Conversión del sueldo de un empleado registrado.
 - Consulta de temperatura, humedad y estado del tiempo de Chillán.
-- Rechazo de edades inferiores a 18 años.
-- Validación de RUT correctos e incorrectos.
-- Registro y búsqueda de empleados mediante SQLite.
-- Conservación de registros existentes después de modificar la conexión a la base de datos.
+- Comprobación de persistencia de información mediante SQLite.
+- Análisis de seguridad mediante Bandit.
 
-### Justificación de las decisiones técnicas
+### Justificación de decisiones técnicas
 
-**Uso de SQLite:** Se mantuvo SQLite porque permite almacenar información localmente sin necesidad de configurar un servidor de base de datos adicional.
+**Uso de SQLite:** Se mantuvo SQLite porque permite almacenar información localmente sin configurar un servidor adicional.
 
-**Uso de APIs externas:** Se integraron servicios meteorológicos y financieros para proporcionar información útil para la planificación operativa y la gestión de pagos internacionales.
+**Uso de APIs externas:** Se integraron servicios meteorológicos y financieros para proporcionar información útil en la gestión operativa y la conversión de sueldos.
 
-**Protección de contraseñas:** Se mantuvo PBKDF2-HMAC-SHA256 para dificultar la recuperación de contraseñas a partir de los verificadores almacenados.
+**Protección de contraseñas:** Se utilizó PBKDF2-HMAC-SHA256 para dificultar la recuperación de contraseñas a partir de los verificadores almacenados.
 
 **Validación del RUT:** Se incorporó el cálculo del dígito verificador para reducir el registro de identificadores incorrectos.
 
-**Manejo de excepciones:** Se mejoraron los mensajes de error para evitar mostrar detalles internos y permitir que el sistema continúe funcionando ante fallos controlados.
+**Seguridad de APIs:** Se centralizaron las conexiones mediante `api_segura.py` para restringir destinos y controlar redirecciones.
 
-**Uso de IA:** Las sugerencias se utilizaron como apoyo al desarrollo, revisando su comportamiento mediante pruebas antes de incorporarlas al proyecto.
+**Manejo de excepciones:** Se mejoraron los mensajes de error y la recuperación ante fallos controlados.
+
+**Uso de IA:** Las sugerencias se utilizaron como apoyo al desarrollo, comprobando su comportamiento mediante pruebas antes de incorporarlas al proyecto.
+
+---
 
 ## Autor
 
 Proyecto académico desarrollado para INACAP.
 
-Asignatura: Programación Orientada a Objeto Seguro.
+**Asignatura:** Programación Orientada a Objeto Seguro.
 
-Evaluación: Evaluación Sumativa 3 – Unidad 3.
+**Evaluación:** Evaluación Sumativa 3 – Unidad 3.
+
+---
 
 ## Estado del proyecto
 
-Las funcionalidades principales de gestión de empleados, autenticación, consulta de APIs y conversión de monedas fueron implementadas y probadas mediante GitHub Codespaces.
+Las funcionalidades principales del sistema fueron implementadas y probadas mediante GitHub Codespaces.
 
-El sistema corresponde a un proyecto académico y requiere revisiones adicionales antes de utilizarse en producción.
+El proyecto incluye:
+
+- Gestión de empleados mediante SQLite.
+- Autenticación segura de usuarios.
+- Validación de RUT chileno.
+- Consulta de información meteorológica.
+- Consulta de tipos de cambio.
+- Conversión de sueldos.
+- Conexiones HTTPS con destinos restringidos.
+- Manejo de excepciones.
+- Análisis estático con Bandit sin advertencias detectadas.
+
+**Estado: Funcionalidades principales implementadas y revisadas.**
+
+El sistema corresponde a un proyecto académico y requiere revisiones adicionales antes de utilizarse en un entorno de producción.
