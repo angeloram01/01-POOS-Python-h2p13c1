@@ -1,5 +1,8 @@
+import sqlite3
 from empleado import Empleado
 from basedatos import BaseDatos
+from clima import mostrar_clima
+from login import verificar_login
 
 db = BaseDatos()
 
@@ -30,9 +33,15 @@ def menu():
     print("5.- Mostrar todos los empleados")
     print("6.- Mostrar el clima")
     print("0.- Salir")
+    
     op = leer_numero("Ingrese una opción: ")
-    print("=" * 30)
+
+    if op < 0 or op > 6:
+        print("Error: Debe ingresar una opción entre 0 y 6.")
+        return -1
+
     return op
+
 
 def agregar_empleado():
     rut = input("Ingrese RUT del empleado: ")
@@ -195,6 +204,8 @@ def main():
             eliminar_empleado()
         elif opcion == 5:
             imprimir_todos()
+        elif opcion == 6:
+            mostrar_clima()
         elif opcion == 0:
             print("Saliendo del sistema de EcoTech Solutions...")
             break
@@ -202,4 +213,7 @@ def main():
             print("Opción inválida. Intente nuevamente.")
 
 if __name__ == "__main__":
-    main()
+    if verificar_login():
+        main()
+    else:
+        print("Acceso denegado.")

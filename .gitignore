@@ -1,0 +1,5 @@
+usuarios.json
+ecotech.db
+__pycache__/
+.env
+.venv/
