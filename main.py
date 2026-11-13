@@ -3,6 +3,8 @@ from empleado import Empleado
 from basedatos import BaseDatos
 from clima import mostrar_clima
 from login import verificar_login
+from monedas import consultar_monedas, convertir_sueldo
+from validar_rut import validar_rut, normalizar_rut
 
 db = BaseDatos()
 
@@ -32,19 +34,34 @@ def menu():
     print("4.- Eliminar empleado")
     print("5.- Mostrar todos los empleados")
     print("6.- Mostrar el clima")
+    print("7.- Consultar tipo de cambio")
+    print("8.- Convertir sueldo a otra moneda")
+    print("9.- Convertir sueldo de empleado por RUT")
     print("0.- Salir")
     
     op = leer_numero("Ingrese una opción: ")
 
-    if op < 0 or op > 6:
-        print("Error: Debe ingresar una opción entre 0 y 6.")
+    if op < 0 or op > 9:
+        print("Error: Debe ingresar una opción entre 0 y 9.")
         return -1
 
     return op
 
 
+def leer_rut(mensaje):
+    rut = input(mensaje).strip()
+
+    if not validar_rut(rut):
+        print("Error: El RUT ingresado no es válido.")
+        return None
+
+    return normalizar_rut(rut)
+
+
 def agregar_empleado():
-    rut = input("Ingrese RUT del empleado: ")
+    rut = leer_rut("Ingrese RUT del empleado: ")
+    if rut is None:
+        return
     nombre = input("Ingrese nombre del empleado: ")
     edad = leer_numero("Ingrese edad del empleado: ")
     
@@ -83,7 +100,9 @@ def agregar_empleado():
             conexion.close()
 
 def buscar_empleado_db():
-    rut = input("Ingrese RUT del empleado a buscar: ")
+    rut = leer_rut("Ingrese RUT del empleado a buscar: ")
+    if rut is None:
+     return
     conexion = db.conectar()
     if conexion:
         try:
@@ -104,6 +123,22 @@ def buscar_empleado_db():
         finally:
             conexion.close()
     return None
+
+
+def convertir_sueldo_empleado():
+    print("\n--- CONVERSIÓN DE SUELDO DE EMPLEADO ---")
+
+    emp = buscar_empleado_db()
+
+    if emp is None:
+        return
+
+    print(f"\nSueldo del empleado: ${emp.sueldo:,.0f} CLP")
+
+    from monedas import convertir_monto
+
+    convertir_monto(emp.sueldo)
+
 
 def imprimir_todos():
     conexion = db.conectar()
@@ -126,7 +161,9 @@ def imprimir_todos():
             conexion.close()
 
 def eliminar_empleado():
-    rut = input("Ingrese RUT del empleado a eliminar: ")
+    rut = leer_rut("Ingrese RUT del empleado a eliminar: ")
+    if rut is None:
+        return
     conexion = db.conectar()
     if conexion:
         try:
@@ -145,7 +182,9 @@ def eliminar_empleado():
             conexion.close()
 
 def editar_empleado():
-    rut = input("Ingrese RUT del empleado a editar: ")
+    rut = leer_rut("Ingrese RUT del empleado a editar: ")
+    if rut is None:
+        return
     conexion = db.conectar()
     if not conexion:
         return
@@ -206,6 +245,12 @@ def main():
             imprimir_todos()
         elif opcion == 6:
             mostrar_clima()
+        elif opcion == 7:
+            consultar_monedas()
+        elif opcion == 8:
+         convertir_sueldo()
+        elif opcion == 9:
+         convertir_sueldo_empleado()
         elif opcion == 0:
             print("Saliendo del sistema de EcoTech Solutions...")
             break

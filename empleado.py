@@ -1,6 +1,9 @@
+import math
+from validar_rut import validar_rut, normalizar_rut
+
 class Empleado:
     
-    CARGOS_VALIDOS: set[str] = {"Desarrollador", "Analista", "Jefe de Proyecto", "soporte", "Otro"}
+    CARGOS_VALIDOS: set[str] = {"Desarrollador", "Analista", "Jefe de Proyecto", "Soporte", "Otro"}
 
     def __init__(self, rut: str, nombre: str, edad: int, cargo: str, sueldo: float):
         self.rut = rut
@@ -15,9 +18,10 @@ class Empleado:
 
     @rut.setter
     def rut(self, rut: str) -> None:
-        if not rut.strip():
-            raise ValueError("El RUT no puede estar vacío.")
-        self._rut = rut
+        if not isinstance(rut, str) or not validar_rut(rut):
+            raise ValueError("El RUT ingresado no es válido.")
+
+        self._rut = normalizar_rut(rut)
 
     @property
     def nombre(self) -> str:
@@ -45,7 +49,10 @@ class Empleado:
 
     @cargo.setter
     def cargo(self, cargo: str) -> None:
-        self._cargo = cargo
+     if cargo not in self.CARGOS_VALIDOS:
+        raise ValueError("El cargo ingresado no es válido.")
+
+     self._cargo = cargo
 
     @property
     def sueldo(self) -> float:
@@ -53,8 +60,15 @@ class Empleado:
 
     @sueldo.setter
     def sueldo(self, sueldo: float) -> None:
+        if not isinstance(sueldo, (int, float)):
+            raise TypeError("El sueldo debe ser numérico.")
+
+        if not math.isfinite(sueldo):
+            raise ValueError("El sueldo debe ser un número finito.")
+
         if sueldo < 0:
             raise ValueError("El sueldo no puede ser negativo.")
+
         self._sueldo = sueldo
 
     def __str__(self) -> str:
