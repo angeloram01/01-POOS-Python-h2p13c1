@@ -1,36 +1,54 @@
 
-import json
-from urllib.request import urlopen
+import math
 from urllib.error import URLError, HTTPError
+from api_segura import consultar_api
+
+
+URL_MONEDAS = "https://open.er-api.com/v6/latest/CLP"
+
+
+def obtener_tasas():
+    datos = consultar_api(URL_MONEDAS)
+
+    if datos.get("result") != "success":
+        raise ValueError("La API no entregó datos válidos.")
+
+    tasas = datos["rates"]
+
+    if not isinstance(tasas, dict):
+        raise ValueError("Formato de tasas inválido.")
+
+    return tasas
+
+
+def obtener_tasa(tasas, moneda):
+    tasa = float(tasas[moneda])
+
+    if not math.isfinite(tasa) or tasa <= 0:
+        raise ValueError("Tipo de cambio inválido.")
+
+    return tasa
 
 
 def consultar_monedas():
     print("\n--- Tipos de cambio ---")
 
-    url = "https://open.er-api.com/v6/latest/CLP"
-
     try:
-        with urlopen(url, timeout=10) as respuesta:
-            datos = json.load(respuesta)
-
-        if datos.get("result") != "success":
-            print("No se pudieron obtener los tipos de cambio.")
-            return
-
-        monedas = datos["rates"]
+        tasas = obtener_tasas()
 
         print("1 peso chileno equivale a:")
-        print(f"Dólar (USD): {monedas['USD']:.6f}")
-        print(f"Euro (EUR): {monedas['EUR']:.6f}")
-        print(f"Peso argentino (ARS): {monedas['ARS']:.6f}")
+        print(f"Dólar (USD): {obtener_tasa(tasas, 'USD'):.6f}")
+        print(f"Euro (EUR): {obtener_tasa(tasas, 'EUR'):.6f}")
+        print(f"Peso argentino (ARS): {obtener_tasa(tasas, 'ARS'):.6f}")
 
         print("\nConsulta realizada correctamente.")
 
-    except (URLError, HTTPError, TimeoutError):
+    except (HTTPError, URLError, TimeoutError):
         print("Error: No se pudo conectar con la API.")
 
-    except (ValueError, KeyError, TypeError):
+    except (ValueError, KeyError, TypeError, OverflowError):
         print("Error: La API entregó datos inválidos.")
+
 
 def convertir_sueldo():
     print("\n--- CONVERSIÓN DE SUELDOS ---")
@@ -38,42 +56,15 @@ def convertir_sueldo():
     try:
         sueldo = float(input("Ingrese sueldo en pesos chilenos: "))
 
-        if sueldo <= 0:
-            print("Error: El sueldo debe ser mayor a cero.")
+        if not math.isfinite(sueldo) or sueldo <= 0:
+            print("Error: El sueldo debe ser un número positivo y finito.")
             return
 
-        print("1.- Dólar (USD)")
-        print("2.- Euro (EUR)")
-
-        opcion = input("Seleccione moneda: ").strip()
-
-        monedas = {"1": "USD", "2": "EUR"}
-
-        if opcion not in monedas:
-            print("Error: Moneda no válida.")
-            return
-
-        moneda = monedas[opcion]
-
-        with urlopen("https://open.er-api.com/v6/latest/CLP", timeout=10) as respuesta:
-            datos = json.load(respuesta)
-
-        if datos.get("result") != "success":
-            print("Error al consultar el tipo de cambio.")
-            return
-
-        tasa = datos["rates"][moneda]
-        convertido = sueldo * tasa
-
-        print(f"\nSueldo original: ${sueldo:,.0f} CLP")
-        print(f"Sueldo convertido: {convertido:,.2f} {moneda}")
-
-    except ValueError:
+    except (ValueError, OverflowError):
         print("Error: Ingrese un sueldo numérico válido.")
-    except (URLError, HTTPError, TimeoutError):
-        print("Error de conexión con la API.")
-    except (KeyError, TypeError):
-        print("Error: No se pudo procesar el tipo de cambio.")
+        return
+
+    convertir_monto(sueldo)
 
 
 def convertir_monto(sueldo):
@@ -83,32 +74,38 @@ def convertir_monto(sueldo):
 
     opcion = input("Ingrese opción: ").strip()
 
-    monedas = {"1": "USD", "2": "EUR"}
+    monedas = {
+        "1": "USD",
+        "2": "EUR"
+    }
 
     if opcion not in monedas:
         print("Error: Moneda no válida.")
         return
 
-    try:
-        with urlopen(
-            "https://open.er-api.com/v6/latest/CLP",
-            timeout=10
-        ) as respuesta:
-            datos = json.load(respuesta)
+    moneda = monedas[opcion]
 
-        if datos.get("result") != "success":
-            print("Error al consultar la API.")
+    try:
+        sueldo = float(sueldo)
+
+        if not math.isfinite(sueldo) or sueldo < 0:
+            print("Error: El sueldo no es válido.")
             return
 
-        moneda = monedas[opcion]
-        tasa = datos["rates"][moneda]
+        tasas = obtener_tasas()
+        tasa = obtener_tasa(tasas, moneda)
 
         resultado = sueldo * tasa
+
+        if not math.isfinite(resultado):
+            print("Error: El resultado de la conversión no es válido.")
+            return
 
         print(f"\nSueldo original: ${sueldo:,.0f} CLP")
         print(f"Sueldo convertido: {resultado:,.2f} {moneda}")
 
-    except (URLError, HTTPError, TimeoutError):
+    except (HTTPError, URLError, TimeoutError):
         print("Error: No se pudo conectar con la API.")
-    except (ValueError, KeyError, TypeError):
+
+    except (ValueError, KeyError, TypeError, OverflowError):
         print("Error: No se pudo procesar la conversión.")

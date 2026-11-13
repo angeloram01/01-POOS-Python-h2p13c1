@@ -1,7 +1,6 @@
 
-import json
-from urllib.request import urlopen
 from urllib.error import URLError, HTTPError
+from api_segura import consultar_api
 
 
 def mostrar_clima():
@@ -37,12 +36,7 @@ def mostrar_clima():
     }
 
     try:
-        with urlopen(url, timeout=10) as respuesta:
-            if respuesta.status != 200:
-                print("Error: Respuesta inesperada del servicio.")
-                return
-
-            datos = json.load(respuesta)
+        datos = consultar_api(url)
 
         clima = datos["current"]
 
