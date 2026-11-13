@@ -48,6 +48,20 @@ Los datos se almacenan en una base de datos SQLite.
 - GitHub Codespaces
 - Bandit para análisis de seguridad
 
+## Acceso al sistema
+
+Para ingresar al sistema de gestión EcoTech Solutions, utiliza las siguientes credenciales de demostración:
+
+**Usuario:** `admin`
+
+**Contraseña:** `admin1234567`
+
+El sistema dispone de autenticación de usuarios y almacenamiento seguro de contraseñas mediante hash PBKDF2.
+
+La cuenta de demostración se genera automáticamente durante la configuración inicial del sistema.
+
+**Nota:** Estas credenciales son exclusivamente para fines académicos y deben cambiarse antes de utilizar el sistema en un entorno real.
+
 ## Estructura del proyecto
 
 ```text
